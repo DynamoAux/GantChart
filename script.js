@@ -6,6 +6,9 @@ const todoList = document.getElementById('todo-list');
 		const finishInput = document.getElementById('finish-input');
 		const addTodoButton = document.getElementById('add-todo');
 
+    const subtaskInput = document.getElementById('subtask-input');
+    const addSubtaskButton = document.getElementById('add-subtask');
+
 		let todos = [];
     let taskvisMap = new Map();
 
@@ -24,10 +27,12 @@ const todoList = document.getElementById('todo-list');
           taskName: taskInput.value,
           duration: durationInDays,
           start: startInput.value,
-          finish: finishInput.value
+          finish: finishInput.value,
+          subtasks: []
       };
   
       todos.push(todo);
+
   
       // Add the taskduration row here
       const taskduration = document.querySelector('.taskduration');
@@ -60,6 +65,49 @@ const todoList = document.getElementById('todo-list');
 			resetInputs();
 
 		}
+    function addSubtask() {
+      const selectedTaskIndex = todos.findIndex(todo => todo.selected);
+      if (selectedTaskIndex === -1) {
+        alert('Please select a task before adding a subtask');
+        return;
+      }
+    
+      const subtask = {
+        name: subtaskInput.value,
+        color: 'green'
+      };
+    
+      todos[selectedTaskIndex].subtasks.push(subtask);
+    
+      renderSubtasks(selectedTaskIndex);
+      subtaskInput.value = '';
+    }
+    
+    function renderSubtasks(taskIndex) {
+      const taskduration = document.querySelector('.taskduration');
+      taskduration.innerHTML = '';
+    
+      todos[taskIndex].subtasks.forEach((subtask, index) => {
+        const taskdurationRow = document.createElement('div');
+        taskdurationRow.style.height = '4.14rem';
+        taskduration.appendChild(taskdurationRow);
+    
+        const taskvis = document.createElement('div');
+        taskvis.textContent = subtask.name;
+        taskvis.style.backgroundColor = subtask.color;
+        taskvis.style.height = '70%';
+        taskvis.style.width = '10rem'; // Adjust this according to your needs
+        taskvis.style.position = 'relative';
+        taskvis.style.cursor = 'pointer';
+        taskdurationRow.appendChild(taskvis);
+    
+        taskvis.addEventListener('mousedown', handleMouseDown);
+        taskvis.addEventListener('mousemove', handleMouseMove);
+        taskvis.addEventListener('mouseup', handleMouseUp);
+      });
+    }
+
+    addSubtaskButton.addEventListener('click', addSubtask);
 
     let isMouseDown = false;
     let offsetX;
@@ -93,7 +141,23 @@ const todoList = document.getElementById('todo-list');
 			todoList.innerHTML = '';
 
 			todos.forEach((todo, index) => {
-				const row = document.createElement('tr');
+				const row = document.createElement('tr'); 
+
+        if (todo.selected) {
+          row.style.backgroundColor = 'lightblue';
+        } else {
+          row.style.backgroundColor = '';
+        }
+    
+        row.addEventListener('click', () => {
+          todos.forEach((task) => {
+            task.selected = false;
+          });
+          todo.selected = true;
+          renderTodos();
+        });
+    
+        todoList.appendChild(row);
 
 				const wbsCell = document.createElement('td');
 				wbsCell.innerText = todo.wbs;
